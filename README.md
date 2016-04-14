@@ -1,2 +1,2 @@
 # python-satellite-dsl
-Python-based configuration DSL for Saatellite 6/Foreman/Katello
+Python-based configuration DSL for Satellite 6/Foreman/Katello
