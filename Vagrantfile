@@ -55,18 +55,19 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    yum -y install \
-      epel-release \
-      http://yum.theforeman.org/releases/1.11/el7/x86_64/foreman-release.rpm \
-      nss-mdns avahi PyYAML python-virtualenv python-ipython-console
+    yum -y install http://fedorapeople.org/groups/katello/releases/yum/2.4/katello/RHEL/7Server/x86_64/katello-repos-latest.rpm
+    yum -y install http://yum.theforeman.org/releases/1.10/el7/x86_64/foreman-release.rpm
+    yum -y install http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+    yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    yum -y install foreman-release-scl
+    yum -y install nss-mdns avahi PyYAML python-virtualenv python-ipython-console
     systemctl start avahi-daemon
     sed -i -re "s/\\s($(hostname -s))\\s/ \\1.example.com\\0/" /etc/hosts
-    sed -i -re 's/^(SELINUX=).*$/\1permissive/' /etc/selinux/config
-    setenforce Permissive
-    yum -y install foreman-installer
-    foreman-installer \
-      --foreman-organizations-enabled \
-      --foreman-locations-enabled
+    # sed -i -re 's/^(SELINUX=).*$/\1permissive/' /etc/selinux/config
+    # setenforce Permissive
+    yum -y install katello
+    exit 0
+    katello-installer
     su - vagrant <<EOF
       virtualenv --system-site-packages ~/venv
       source ~/venv/bin/activate
@@ -74,5 +75,6 @@ Vagrant.configure(2) do |config|
       pip install -r requirements.txt
       examples/foreman-ans-to-nailgun-conf.py
     EOF
+    sudo puppet agent -t
   SHELL
 end

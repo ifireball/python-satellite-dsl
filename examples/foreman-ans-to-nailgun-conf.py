@@ -9,10 +9,12 @@ import sys
 import yaml
 import logging
 from subprocess import check_output
+from os.path import exists
 
 import nailgun.config
 
 FOREMAN_ANS_FILE = '/etc/foreman-installer/scenarios.d/foreman-answers.yaml'
+KATELLO_ANS_FILE = '/etc/katello-installer/answers.katello-installer.yaml'
 
 
 def main():
@@ -20,7 +22,13 @@ def main():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    foreman_answers_yaml = check_output(('sudo', 'cat', FOREMAN_ANS_FILE))
+    foreman_answers_yaml = next((
+        check_output(('sudo', 'cat', ans_file))
+        for ans_file in (FOREMAN_ANS_FILE, KATELLO_ANS_FILE)
+        if exists(ans_file)
+    ), None)
+    if foreman_answers_yaml is None:
+        raise RuntimeError('Foreman/Katello answer file not found')
     foreman_answers = yaml.load(foreman_answers_yaml)
 
     foreman_credentials = dict(
